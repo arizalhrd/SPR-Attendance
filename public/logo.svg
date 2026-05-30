@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <!-- Background Radial Gradient matching the blue spherical shading -->
+    <radialGradient id="blueSphere" cx="45%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#A5C2FF" />
+      <stop offset="15%" stop-color="#4C78FF" />
+      <stop offset="70%" stop-color="#1B42C1" />
+      <stop offset="100%" stop-color="#0B1A60" />
+    </radialGradient>
+    
+    <!-- Under shadow of the text for white border outline effect -->
+    <filter id="outline" x="-20%" y="-20%" width="140%" height="140%">
+      <feMorphology in="SourceAlpha" result="DILATED" operator="dilate" radius="2" />
+      <feFlood flood-color="#ffffff" flood-opacity="1" result="WHITE" />
+      <feComposite in="WHITE" in2="DILATED" operator="in" result="OUTLINE" />
+      <feMerge>
+        <feMergeNode in="OUTLINE" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Blue spherical background circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#blueSphere)" />
+
+  <!-- Chunky Orange Text "SPR" in stylized thick letters -->
+  <text 
+    x="50" 
+    y="61" 
+    font-family="'Trebuchet MS', 'Arial Black', sans-serif" 
+    font-size="28" 
+    font-weight="900" 
+    fill="#FF8000" 
+    text-anchor="middle"
+    filter="url(#outline)"
+    letter-spacing="-1.5"
+  >SPR</text>
+</svg>

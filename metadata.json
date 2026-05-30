@@ -1,0 +1,6 @@
+{
+  "name": "HR Attendance System",
+  "description": "Professional Mobile-First HRIS and Attendance management system with geofencing, leave quotas, approvals, and reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
