@@ -35,6 +35,7 @@ export default function App() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [requests, setRequests] = useState<ApprovalRequest[]>([]);
   const [settings, setSettings] = useState<SystemSettings>(defaultSettings);
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(true);
   
   // App states
   const [currentUser, setCurrentUser] = useState<{ id: number; nama: string; role: any; departemen: string } | null>(null);
@@ -54,48 +55,82 @@ export default function App() {
       setCurrentUser(JSON.parse(storedSession));
     }
 
-    // Load or initialize DB state
-    const localEmps = localStorage.getItem('employees');
-    const localAtt = localStorage.getItem('attendance');
-    const localReqs = localStorage.getItem('approvals');
-    const localAnn = localStorage.getItem('announcements');
-    const localSet = localStorage.getItem('system_settings');
+    // Fetch dynamic configuration from custom Express backend
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(config => {
+        const isDemo = config.demoMode !== false;
+        setIsDemoMode(isDemo);
 
-    if (localEmps) setEmployees(JSON.parse(localEmps));
-    else {
-      setEmployees(initialEmployees);
-      localStorage.setItem('employees', JSON.stringify(initialEmployees));
-    }
+        const localEmps = localStorage.getItem('employees');
+        const localAtt = localStorage.getItem('attendance');
+        const localReqs = localStorage.getItem('approvals');
+        const localAnn = localStorage.getItem('announcements');
+        const localSet = localStorage.getItem('system_settings');
 
-    if (localAtt) setAttendanceRecords(JSON.parse(localAtt));
-    else {
-      setAttendanceRecords(defaultAttendance);
-      localStorage.setItem('attendance', JSON.stringify(defaultAttendance));
-    }
+        if (localEmps) {
+          setEmployees(JSON.parse(localEmps));
+        } else {
+          setEmployees(initialEmployees);
+          localStorage.setItem('employees', JSON.stringify(initialEmployees));
+        }
 
-    if (localReqs) setRequests(JSON.parse(localReqs));
-    else {
-      setRequests(defaultApprovals);
-      localStorage.setItem('approvals', JSON.stringify(defaultApprovals));
-    }
+        if (localAtt) {
+          setAttendanceRecords(JSON.parse(localAtt));
+        } else {
+          const fallbackAtt = isDemo ? defaultAttendance : [];
+          setAttendanceRecords(fallbackAtt);
+          localStorage.setItem('attendance', JSON.stringify(fallbackAtt));
+        }
 
-    if (localAnn) setAnnouncements(JSON.parse(localAnn));
-    else {
-      setAnnouncements(defaultAnnouncements);
-      localStorage.setItem('announcements', JSON.stringify(defaultAnnouncements));
-    }
+        if (localReqs) {
+          setRequests(JSON.parse(localReqs));
+        } else {
+          const fallbackReqs = isDemo ? defaultApprovals : [];
+          setRequests(fallbackReqs);
+          localStorage.setItem('approvals', JSON.stringify(fallbackReqs));
+        }
 
-    if (localSet) {
-      const parsed = JSON.parse(localSet);
-      if (parsed.company && (parsed.company.logo === '/logo.svg' || !parsed.company.logo)) {
-        parsed.company.logo = '/company_logo.png';
-        localStorage.setItem('system_settings', JSON.stringify(parsed));
-      }
-      setSettings(parsed);
-    } else {
-      setSettings(defaultSettings);
-      localStorage.setItem('system_settings', JSON.stringify(defaultSettings));
-    }
+        if (localAnn) {
+          setAnnouncements(JSON.parse(localAnn));
+        } else {
+          const fallbackAnn = isDemo ? defaultAnnouncements : [];
+          setAnnouncements(fallbackAnn);
+          localStorage.setItem('announcements', JSON.stringify(fallbackAnn));
+        }
+
+        if (localSet) {
+          const parsed = JSON.parse(localSet);
+          if (parsed.company && (parsed.company.logo === '/logo.svg' || !parsed.company.logo)) {
+            parsed.company.logo = '/company_logo.png';
+            localStorage.setItem('system_settings', JSON.stringify(parsed));
+          }
+          setSettings(parsed);
+        } else {
+          setSettings(defaultSettings);
+          localStorage.setItem('system_settings', JSON.stringify(defaultSettings));
+        }
+      })
+      .catch(err => {
+        console.error("Gagal mendapatkan config dari backend, memakai fallback offline:", err);
+        // Fallback for offline mode or developer setup
+        const localEmps = localStorage.getItem('employees');
+        const localAtt = localStorage.getItem('attendance');
+        const localReqs = localStorage.getItem('approvals');
+        const localAnn = localStorage.getItem('announcements');
+        const localSet = localStorage.getItem('system_settings');
+
+        setEmployees(localEmps ? JSON.parse(localEmps) : initialEmployees);
+        setAttendanceRecords(localAtt ? JSON.parse(localAtt) : defaultAttendance);
+        setRequests(localReqs ? JSON.parse(localReqs) : defaultApprovals);
+        setAnnouncements(localAnn ? JSON.parse(localAnn) : defaultAnnouncements);
+        if (localSet) {
+          const parsed = JSON.parse(localSet);
+          setSettings(parsed);
+        } else {
+          setSettings(defaultSettings);
+        }
+      });
 
     // Fast clock ticker
     const timer = setInterval(() => {
